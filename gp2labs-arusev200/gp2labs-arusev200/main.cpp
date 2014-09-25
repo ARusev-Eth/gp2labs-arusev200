@@ -25,13 +25,19 @@ SDL_GLContext glContext = NULL; //SDL GL Context
 //Window
 void InitWindow(int width, int height, bool fullscreen)
 {
+	int flags=SDL_WINDOW_OPENGL;
+	if (fullscreen)
+	{
+		flags=SDL_WINDOW_OPENGL|SDL_WINDOW_FULLSCREEN;
+	}
+
 	window = SDL_CreateWindow(
 		"Lab 1",				//Window title
 		SDL_WINDOWPOS_CENTERED, //x position of the window - centered
 		SDL_WINDOWPOS_CENTERED, //y position of the window - againt centered
 		width,					//Window width, in pixels
 		height,					//Window height, in pixels
-		SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);     //Flags ?? 
+		flags);     //Flags ?? 
 }
 
 
@@ -90,11 +96,26 @@ void render()
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); //Background to black
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear the colour and depth buffers
 
+	//To be removed soon...
+	
+	glMatrixMode (GL_MODELVIEW); //Switch to modelview
+	glLoadIdentity(); //Reset using the ID matrix
+	glTranslatef(0.0f,0.0f,-5.0f); //Translate -5.0f on the Z-axis
+	glBegin(GL_TRIANGLES);
+		glColor3f(1.0f,	0.0f, 0.0f); //Color of the vertices
+		glVertex3f(0.0f,1.0f,0.0f); //Top
+		glColor3f(0.0f,1.0f,0.0f); //EXPERIMENTO
+		glVertex3f(-1.0f,-1.0f,0.0f); //Bottom left
+		glColor3f(0.0f,1.0f,1.0f); //EXPERIMENTO
+		glVertex3f(1.0f,-1.0f,0.0f); //Bottom Right
+	glEnd();
+	//To be removed soon...\\
+
 	SDL_GL_SwapWindow(window); //Swap buffers
 }
 
 //Let it move
-void upgrade()
+void update()
 {
 
 }
@@ -123,11 +144,10 @@ int main(int argc, char * arg[])
 				//Kill the game loop
 				running = false;
 			}
-
-
-
-
 		}
+
+		update(); //Check if anything's changed
+		render(); //Draw the scene/flip the buffers etc.
 	}
 
 
