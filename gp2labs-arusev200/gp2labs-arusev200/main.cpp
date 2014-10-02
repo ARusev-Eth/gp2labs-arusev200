@@ -53,7 +53,9 @@ void InitWindow(int width, int height, bool fullscreen)
 //Clean up
 void CleanUp()
 {
-	glDeleteBuffers(1,&triangleVBO); //Reclame memory alocated when #cleaningup
+	//Reclame memory alocated when #cleaningup
+	//glDeleteBuffers(number of buffers specified, actual buffers passed)
+	glDeleteBuffers(1,&triangleVBO); 
 	SDL_GL_DeleteContext(glContext); //Delete OGL context before you exit
 	SDL_DestroyWindow(window);
 	SDL_Quit;
@@ -112,8 +114,38 @@ void render()
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); //Background to black
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear the colour and depth buffers
 
+	//-------------------------------------------------------------------------------------------------------------------
+	//Bind and describe contents of the buffer
+
+	//Make the new vertex buffer object active. Repeat here as a sanity check (may have changed since initialisation)
+	glBindBuffer(GL_ARRAY_BUFFER,triangleVBO);
+
+	//Establish it's 3 coordinates per vertex with zero space between elements
+	//in array and contain floating point numbers
+	glVertexPointer(3,GL_FLOAT,0,NULL);
+
+	//Establish array contains vertices (not normals, colours, texture coordinates etc.)
+	glEnableClientState(GL_VERTEX_ARRAY);
+
+	//-------------------------------------------------------------------------------------------------------------------
+
+	//-------------------------------------------------------------------------------------------------------------------
+	//Render the bloody triangle
+
+	glMatrixMode(GL_MODELVIEW); //Switch to ModelView
+	glLoadIdentity(); //Reset using the identity matrix
+	glTranslatef(0.0f,0.0f,-6.0f);//Translate
+
+	//Draw the triangle, giving the number of vertices provided
+	//glDrawArrays(type of primitive we're drawing, start index of the first index in the array buffer(can be used as offset), amount of vertices we're drawing)
+	//this is calculated from the total size of the vertices (9) devided by the size of one vertex(3 * sizeof(float)
+	glDrawArrays(GL_TRIANGLES,0,sizeof(triangleData)/(3*sizeof(float))); 
+	//-------------------------------------------------------------------------------------------------------------------
+
+
 	//To be removed soon...
-	
+	/* Commented out for keeps sake
+
 	glMatrixMode (GL_MODELVIEW); //Switch to modelview
 	glLoadIdentity(); //Reset using the ID matrix
 	glTranslatef(0.0f,0.0f,-5.0f); //Translate -5.0f on the Z-axis
@@ -125,6 +157,8 @@ void render()
 		glColor3f(0.0f,1.0f,1.0f); //EXPERIMENTO
 		glVertex3f(1.0f,-1.0f,0.0f); //Bottom Right
 	glEnd();
+
+	*/
 	//To be removed soon...\\
 
 	SDL_GL_SwapWindow(window); //Swap buffers
