@@ -53,6 +53,7 @@ void InitWindow(int width, int height, bool fullscreen)
 //Clean up
 void CleanUp()
 {
+	glDeleteBuffers(1,&triangleVBO); //Reclame memory alocated when #cleaningup
 	SDL_GL_DeleteContext(glContext); //Delete OGL context before you exit
 	SDL_DestroyWindow(window);
 	SDL_Quit;
@@ -158,7 +159,8 @@ int main(int argc, char * arg[])
 	//Initialise window
 	InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, full);
 
-	initOpenGL();							  //Call initOpenGL function
+	initOpenGL(); //Call initOpenGL function
+	initGeometry(); //Call initGeometry function
 	setViewPort(WINDOW_WIDTH, WINDOW_HEIGHT); //set viewport
 
 	//Where my event at
