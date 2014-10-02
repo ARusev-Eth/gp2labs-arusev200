@@ -4,6 +4,7 @@
 #include <SDL.h> //SDL functionality
 #include <SDL_opengl.h> //OpenGL stuff
 #include <gl\GLU.h> //GLU
+#include "Vertex.h" //Include the vertex header, changes how our vertices are represented
 
 //Variables:
 
@@ -18,9 +19,35 @@ bool full = false; //Fullscreen?
 bool running = true; //Game loops/black magics
 
 //Triangle coordinates
-float triangleData[] = {0.0f, 1.0f, 0.0f, //Top
+/*float triangleData[] = {0.0f, 1.0f, 0.0f, //Top
 						-1.0f, -1.0f, 0.0f, //Bottom Left
 						1.0f, -1.0f, 0.0f}; //Bottom Right
+*/
+
+Vertex triangleData[]={
+						//values of first vertex
+						{-0.5f,0.5f,0.5f, //x,y,z    
+						1.0f,0.0f,1.0f,1.0f}, //r,g,b,a Top Left
+
+						//values of second vertex
+						{-0.5f,-0.5f,0.5f, //x,y,z
+						1.0f,1.0f,0.0f,1.0f}, //r,g,b,a Bottom Left
+						
+						//values of third vertex
+						{0.5f,-0.5f,0.5f, //x,y,z
+						0.0f,1.0f,1.0f,1.0f}, //r,g,b,a Bottom Right
+
+						//values of fourth vertex
+						{0.5f,0.5f,0.5f, //x,y,z
+						1.0f,0.0f,1.0f,1.0f}, //r,g,b,a Top Right
+
+						//values of fifth vertex
+						{-0.5f,0.5f,0.5f, //x,y,z
+						1.0f,0.0f,1.0f,1.0f}, //r,g,b,a Top Left
+
+						//values of sixth and last vertex for one side of cube
+						{0.5f,-0.5f,0.5f, //x,y,z
+						0.0f,1.0f,1.0f,1.0f}}; //r,g,b,a Bottom Right
 
 GLuint triangleVBO; //To be filled when generating buffer/integer ID reffered to by the VBOs
 
@@ -122,10 +149,15 @@ void render()
 
 	//Establish it's 3 coordinates per vertex with zero space between elements
 	//in array and contain floating point numbers
-	glVertexPointer(3,GL_FLOAT,0,NULL);
+	//AFTER STRUCT: pipeline now needs to know the size of each vertex
+	glVertexPointer(3,GL_FLOAT,sizeof(Vertex),NULL);
 
-	//Establish array contains vertices (not normals, colours, texture coordinates etc.)
+	//Sets the color, last parameter says color values(rgba) start 3 floats into each element of the array
+	glColorPointer(4,GL_FLOAT,sizeof(Vertex),(void**)(3 * sizeof(float)));
+
+	//Establish array contains vertices & colours
 	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
 
 	//-------------------------------------------------------------------------------------------------------------------
 
@@ -134,14 +166,14 @@ void render()
 
 	glMatrixMode(GL_MODELVIEW); //Switch to ModelView
 	glLoadIdentity(); //Reset using the identity matrix
-	glTranslatef(0.0f,0.0f,-6.0f);//Translate
+	gluLookAt(0.0f,0.0f,0.0f,0.0f,0.0f,-1.0f,0.0,1.0,0.0); //Move from 2D to 3D; first 3 params = x,y,z, second 3 params = look at point = x,y,z; last 3 params are the Up Axis of the cam = x,y,z
+	glTranslatef(4.0f,0.0f,-10.0f);//Translate
 
 	//Draw the triangle, giving the number of vertices provided
 	//glDrawArrays(type of primitive we're drawing, start index of the first index in the array buffer(can be used as offset), amount of vertices we're drawing)
 	//this is calculated from the total size of the vertices (9) devided by the size of one vertex(3 * sizeof(float)
-	glDrawArrays(GL_TRIANGLES,0,sizeof(triangleData)/(3*sizeof(float))); 
+	glDrawArrays(GL_TRIANGLES,0,6); 
 	//-------------------------------------------------------------------------------------------------------------------
-
 
 	//To be removed soon...
 	/* Commented out for keeps sake
@@ -213,6 +245,7 @@ int main(int argc, char * arg[])
 				running = false;
 			}
 		}
+
 
 		update(); //Check if anything's changed
 		render(); //Draw the scene/flip the buffers etc.
