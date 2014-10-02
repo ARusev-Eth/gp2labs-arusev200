@@ -1,5 +1,6 @@
 //Headers
 #include <iostream>
+#include <GL/glew.h> //include glew
 #include <SDL.h> //SDL functionality
 #include <SDL_opengl.h> //OpenGL stuff
 #include <gl\GLU.h> //GLU
@@ -15,6 +16,13 @@ const int WINDOW_WIDTH = 640;
 
 bool full = false; //Fullscreen?
 bool running = true; //Game loops/black magics
+
+//Triangle coordinates
+float triangleData[] = {0.0f, 1.0f, 0.0f, //Top
+						-1.0f, -1.0f, 0.0f, //Bottom Left
+						1.0f, -1.0f, 0.0f}; //Bottom Right
+
+GLuint triangleVBO; //To be filled when generating buffer/integer ID reffered to by the VBOs
 
 SDL_GLContext glContext = NULL; //SDL GL Context
 
@@ -66,6 +74,13 @@ void initOpenGL()
 	glEnable(GL_DEPTH_TEST);						   //Enable depth testing
 	glDepthFunc(GL_LEQUAL);							   //Which depth test to use
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); //Turn on best perspective correction
+
+	GLenum err = glewInit(); //Initialise GLEW #works
+	if(GLEW_OK != err)
+	{
+		/* Problem: glewInit failed, something is seriously wrong */
+		std::cout << "Error: " << glewGetErrorString(err) << std::endl;
+	}
 }
 
 //Set and reset the viewport
@@ -118,6 +133,23 @@ void render()
 void update()
 {
 
+}
+
+//This fills the Vertex Buffer Object with stuff
+//VBO is used to hold vertex data /arrays of vertices/
+void initGeometry()
+{
+	//Create buffer
+	//glGenBuffers(Number of buffers to generate, pointer to one or an array of ints)
+	glGenBuffers(1, &triangleVBO);
+	
+	//Make the new VBO active
+	//glBindBuffer(type of buffer we're binding, buffer to be bound to pipeline)
+	glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
+
+	//Copy vertex Data to VBO/bound buffer
+	//glBufferData(type of buffer we're copying, size of data being copied into the buffer, actual data copied,hint to OGL static/dynamic - in this case static
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangleData),triangleData, GL_STATIC_DRAW);
 }
 
 //Main method - entry point
