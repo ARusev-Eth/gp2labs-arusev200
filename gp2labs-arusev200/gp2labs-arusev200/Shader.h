@@ -17,7 +17,7 @@ enum SHADER_TYPE
 	FRAGMENT_SHADER=GL_FRAGMENT_SHADER
 };
 
-bool	checkForLinkErrors(GLuint	program);
+bool	checkForLinkErrors(GLuint program);
 
 bool checkForCompilerErrors(GLuint shaderProgram);
 #endif

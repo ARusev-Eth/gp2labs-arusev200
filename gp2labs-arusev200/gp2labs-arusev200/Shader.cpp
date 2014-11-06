@@ -6,6 +6,10 @@ GLuint loadShaderFromMemory(const char * pMem, SHADER_TYPE shaderType)
 	GLuint program = glCreateShader(shaderType);
 	glShaderSource(program, 1, &pMem, NULL);
 	glCompileShader(program);
+	if (checkForCompilerErrors(program))
+	{
+		return 0;
+	}
 	return program;
 }
 
@@ -40,11 +44,6 @@ GLuint	loadShaderFromFile(const	std::string&	filename,	SHADER_TYPE	shaderType)
 		GLuint	program	=	loadShaderFromMemory(fileContents.c_str(),	shaderType);
 		return	program;
 	}
-	
-	if	(checkForCompilerErrors(program))
-	{
-		return	0;
-	}
 
 	return	0;
 }
@@ -75,7 +74,7 @@ bool checkForCompilerErrors(GLuint shaderProgram)
 	return false;
 }
 
-bool	checkForLinkErrors(GLuint	program)
+bool checkForLinkErrors(GLuint program)
 {
 	GLint	isLinked	=	0;
 	glGetProgramiv(program,	GL_LINK_STATUS,	&isLinked);

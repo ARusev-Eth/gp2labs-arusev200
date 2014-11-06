@@ -1,76 +1,69 @@
 //Headers
 #include <iostream>
 #include <GL/glew.h> //include glew
-#include <SDL.h> //SDL functionality
-#include <SDL_opengl.h> //OpenGL stuff
-#include <gl\GLU.h> //GLU
-#include "Vertex.h" //Include the vertex header, changes how our vertices are represented
-#include "Shader.h"
-
-//maths	headers
+//Maths
 #include <glm/glm.hpp>
 using glm::mat4;
 using glm::vec3;
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-//Load it from a memory buffer
-GLuint loadShaderFromMemory(const char * pMem, SHADER_TYPE shaderType)
-{
-	GLuint program = glCreateShader(shaderType);
-	glShaderSource(program, 1, &pMem, NULL);
-	glCompileShader(program);
-	return program;
-}
+
+//Important stuff
+#include <SDL.h> //SDL functionality
+#include <SDL_opengl.h> //OpenGL stuff
+#include <SDL_image.h> //Pretty pictures
+#include <SDL_ttf.h> 
+#include <gl\GLU.h> //GLU
+#include <vector>
+
+//Paths
+const std::string ASSET_PATH = "../assets/";
+const std::string SHADER_PATH = "shaders/";
+const std::string TEXTURE_PATH = "textures/";
+const std::string FONT_PATH = "fonts/";
+
+//Headers
+#include "Vertex.h"
+#include "Shader.h"
+#include "Texture.h"
+#include "GameObject.h"
+#include "Transform.h"
+#include "Mesh.h"
+#include "Material.h"
+#include "Camera.h"
+
 
 //Variables:
 
-//matrices
-mat4	viewMatrix;
-mat4	projMatrix;
-mat4	worldMatrix;
-
-//Pointer to our window
-SDL_Window * window;
+SDL_Window * window = NULL; //Pointer to our window
+SDL_GLContext glcontext = NULL; //SDL Context
 
 //Window creation properties
 const int WINDOW_HEIGHT = 480;
 const int WINDOW_WIDTH = 640;
-
-bool full = false; //Fullscreen?
 bool running = true; //Game loops/black magics
-GLuint	shaderProgram=0; //global int to hold shader
+//GLuint	shaderProgram = 0; //global int to hold shader
 
 
-//Triangle coordinates
-/*float triangleData[] = {0.0f, 1.0f, 0.0f, //Top
-						-1.0f, -1.0f, 0.0f, //Bottom Left
-						1.0f, -1.0f, 0.0f}; //Bottom Right
-*/
+std::vector<GameObject*> displayList;
+GameObject * mainCamera;
 
 Vertex triangleData[]=
 {
-	
 	//Front
-	{ -0.5f, 0.5f, 0.5f,
-	 1.0f, 0.0f, 1.0f, 1.0f },// Top Left
-	{ -0.5f, -0.5f, 0.5f,
-	 1.0f, 1.0f, 0.0f, 1.0f },// Bottom Left
-	{ 0.5f, -0.5f, 0.5f,
-	 0.0f, 1.0f, 1.0f, 1.0f }, //Bottom Right
-	{ 0.5f, 0.5f, 0.5f,
-	 1.0f, 0.0f, 1.0f, 1.0f },// Top Right
-	
-	 //back
-	{ -0.5f, 0.5f, -0.5f,
-	 1.0f, 0.0f, 1.0f, 1.0f },// Top Left
-	{ -0.5f, -0.5f, -0.5f,
-	 1.0f, 1.0f, 0.0f, 1.0f },// Bottom Left
-	{ 0.5f, -0.5f, -0.5f,
-	 0.0f, 1.0f, 1.0f, 1.0f }, //Bottom Right
-	{ 0.5f, 0.5f, -0.5f,
-	 1.0f, 0.0f, 1.0f, 1.0f },// Top Right
+	{ vec3(-0.5f, 0.5f, 0.5f), vec2(0.0f, 0.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f) }, //Top Left
+	{ vec3(-0.5f, -0.5f, 0.5f), vec2(0.0f, 1.0f), vec4(0.0f, 1.0f, 0.0f, 1.0f) }, //Bottom Left
+	{ vec3(0.5f, -0.5f, 0.5f), vec2(1.0f, 1.0f), vec4(0.0f, 0.0f, 1.0f, 1.0f) }, //Bottom Right
+	{ vec3(0.5f, 0.5f, 0.5f), vec2(1.0f, 0.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f) }, //Top Right
+
+	//Back
+	{ vec3(-0.5f, 0.5f, -0.5f), vec2(0.0f, 0.0f), vec4(0.0f, 0.0f, 1.0f, 1.0f) }, //Top Left
+	{ vec3(-0.5f, -0.5f, -0.5f), vec2(0.0f, 1.0f), vec4(1.0f, 0.0f, 0.0f, 1.0f) }, //Bottom Left
+	{ vec3(0.5f, -0.5f, -0.5f), vec2(1.0f, 1.0f), vec4(0.0f, 0.0f, 0.0f, 1.0f) }, //Bottom Right
+	{ vec3(0.5f, 0.5f, -0.5f), vec2(1.0f, 0.0f), vec4(0.0f, 1.0f, 0.0f, 1.0f) } //Top Right
 };
+
 
 GLuint indices[]={
 	 //front
@@ -97,27 +90,40 @@ GLuint indices[]={
 	 4,5,6,
 	 4,7,6
 };
+//Variables\\
 
+/*
 GLuint triangleVBO; //To be filled when generating buffer/integer ID reffered to by the VBOs
 GLuint triangleEBO;
 
 SDL_GLContext glContext = NULL; //SDL GL Context
+*/
 
-//Variables\\
+//Error checks
+void CheckForErrors()
+{
+	GLenum error;
+	do{
+		error = glGetError();
+	} while  (error != GL_NO_ERROR);
+}
 
 //Functions:
 
 //Window
 void InitWindow(int width, int height, bool fullscreen)
 {
+
+	//some full screen action
 	int flags=SDL_WINDOW_OPENGL;
 	if (fullscreen)
 	{
 		flags=SDL_WINDOW_OPENGL|SDL_WINDOW_FULLSCREEN;
 	}
 
+	//Creating them windows, setting them parameters
 	window = SDL_CreateWindow(
-		"Lab 1",				//Window title
+		"Lab 6",				//Window title
 		SDL_WINDOWPOS_CENTERED, //x position of the window - centered
 		SDL_WINDOWPOS_CENTERED, //y position of the window - againt centered
 		width,					//Window width, in pixels
@@ -130,13 +136,28 @@ void InitWindow(int width, int height, bool fullscreen)
 //Clean up
 void CleanUp()
 {
-	//Reclame memory alocated when #cleaningup
-	glDeleteProgram(shaderProgram);
-	//glDeleteBuffers(number of buffers specified, actual buffers passed)
-	glDeleteBuffers(1,&triangleVBO); 
-	glDeleteBuffers(1, &triangleEBO);
-	SDL_GL_DeleteContext(glContext); //Delete OGL context before you exit
+	//Destroy game objects in the list
+	auto iter = displayList.begin();
+	while (iter != displayList.end())
+	{
+		(*iter)->destroy();
+		if ((*iter))
+		{
+			delete(*iter);
+			(*iter) = NULL;
+			iter = displayList.erase(iter);
+		}
+		else
+		{
+			iter++;
+		}
+	}
+	displayList.clear;
+
+	SDL_GL_DeleteContext(glcontext); //Delete OGL context before you exit
 	SDL_DestroyWindow(window);
+	IMG_Quit;
+	TTF_Quit;
 	SDL_Quit;
 }
 
@@ -148,9 +169,9 @@ void initOpenGL()
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE	);
 
-	glContext = SDL_GL_CreateContext(window); //Create gl context
+	glcontext = SDL_GL_CreateContext(window); //Create gl context
 
-	if(!glContext)
+	if(!glcontext)
 	{
 		std::cout << "Error Creating OpenGL context" << SDL_GetError() << std::endl;
 	}
@@ -186,12 +207,96 @@ void setViewPort(int width, int height)
 
 }
 
+void Initialise()
+{
+	//Making the camera
+	mainCamera = new GameObject(); 
+	mainCamera->SetName("MainCamera"); 
+
+	//Setting up the transformation
+	Transform *t = new Transform();
+	t->setPosition(0.0f, 0.0f, 10.0f);
+	mainCamera->SetTransform(t);
+
+	//Setting the camera's properties up
+	Camera * c = new Camera();
+	c->setAspectRatio((float)(WINDOW_WIDTH / WINDOW_HEIGHT));
+	c->setFOV(45.0f);
+	c->setNearClip(0.1f);
+	c->setFarClip(1000.0f);
+	mainCamera->setCamera(c);
+	displayList.push_back(mainCamera);
+
+	//Making the cube #Boxie
+	GameObject * cube = new GameObject();
+	cube->setName("BOXIE");
+
+	//Setting the transform up
+	Transform *transform = new Transform();
+	transform->setPosition(0.0f, 0.0f, 0.0f);
+	cube->setTransform(transform);
+
+	//Material and shaders
+	Material * material = new Material();
+	std::string vsPath = ASSET_PATH + SHADER_PATH + "/simpleVS.glsl";
+	std::string fsPath = ASSET_PATH + SHADER_PATH + "/simpleFS.glsl";
+	material->loadShader(vsPath, fsPath);
+	cube->setMaterial(material);
+
+	//All of this for a cube?
+	Mesh * mesh = new Mesh;
+	cube->setMesh(mesh);
+	displayList.push_back(cube); //Put it on the target list
+
+	//Brian's alternate syntax, used for updating, rendering and disposing off stuff easily; saves typing
+	//All it does is fill a list and then go through the list (cube,mainCamera)
+	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
+	{
+		(*iter)->init();
+	}
+
+	mesh->copyVertexData(8, sizeof(Vertex), (void**)triangleData);
+	mesh->copyIndexData(36, sizeof(int), (void**)indices);
+}
+
 //Let there be images
 void render()
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); //Background to black
+	glClearDepth(1.0f); //Make sure depth properly set
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear the colour and depth buffers
 
+	//Render everything on the list
+	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
+	{
+		(*iter)->render();
+
+		//Get the current object's(the one being rendered during this loop) mesh, transform and material
+		Mesh * currentMesh = (*iter)->getMesh();
+		Transform * currentTransform = (*iter)->getTransform();
+		Material * currentMaterial = (*iter)->getMaterial;
+
+		//If the object has a mesh, a transform and a material
+		if (currentMesh && currentTransform && currentMaterial)
+		{
+			currentMaterial->bind();
+			currentMesh->bind();
+
+			GLint MVPLocation = currentMaterial->getUniformLocation("MVP");
+
+			Camera * camera1 = mainCamera->getCamera();
+			mat4 MVP = cam->getProjection() * camera1->getView * currentTransform->getModel();
+			//Should look back at this later on
+			glUniformMatrix4fv(MVPLocation, 1, GL_FALSE, glm::value_ptr(MVP));
+
+			glDrawElements(GL_TRIANGLES, currentMesh->getIndexCount(), GL_UNSIGNED_INT, 0);
+		}
+	}
+
+	SDL_GL_SwapWindow(window);
+	/*
+	!!!!!!RIGHTY SO I SHOULD DEFO START REMOVING THESE AT SOME POINT, need to save them somewhere before I do!!!!!
+	there's a swap window somewhere in here...
 	//-------------------------------------------------------------------------------------------------------------------
 	//Bind and describe contents of the buffer
 
@@ -235,7 +340,7 @@ void render()
 	//-------------------------------------------------------------------------------------------------------------------
 
 	//To be removed soon...
-	/* Commented out for keeps sake
+	Commented out for keeps sake
 
 	glMatrixMode (GL_MODELVIEW); //Switch to modelview
 	glLoadIdentity(); //Reset using the ID matrix
@@ -256,11 +361,20 @@ void render()
 //Let it move
 void update()
 {
+	/*
 	projMatrix = glm::perspective(45.0f,	(float)WINDOW_WIDTH	/ (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 	viewMatrix = glm::lookAt(vec3(0.0f, 0.0f, 10.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
 	worldMatrix = glm::translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
+	*/
+
+	//Update everything on the list (Camera, Cube)
+	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
+	{
+		(*iter)->update();
+	}
 }
 
+/* I should really start getting rid of these things
 //This fills the Vertex Buffer Object with stuff
 //VBO is used to hold vertex data /arrays of vertices/
 void initGeometry()
@@ -290,7 +404,7 @@ void initGeometry()
 void	createShader()
 {
 	GLuint	vertexShaderProgram=0;	
-	std::string	vsPath	=	ASSET_PATH	+	SHADER_PATH+"/simpleVS.glsl";	
+	std::string	vsPath	= ASSET_PATH + SHADER_PATH+"/simpleVS.glsl";	
 	vertexShaderProgram	=	loadShaderFromFile(vsPath,	VERTEX_SHADER);
 					
 	GLuint	fragmentShaderProgram=0;
@@ -308,21 +422,46 @@ void	createShader()
 	glDeleteShader(vertexShaderProgram);
 	glDeleteShader(fragmentShaderProgram);
 }
+*/
 
 //Main method - entry point
 int main(int argc, char * arg[])
 {
+	//Initialise everything, if it's not 0 - all is good
+	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+	{
+		std::cout << "Error SDL_Init derp" << SDL_GetError() << std::endl;
+		return -1;
+	}
+
+
+	int imageInitFlags = IMG_INIT_JPG | IMG_INIT_PNG;
+	int returnInitFlags = IMG_Init(imageInitFlags);
+	//Let me know/handle if SDL_Image doesn't get initialised properly
+	if (((returnInitFlags)& (imageInitFlags)) != imageInitFlags)
+	{
+		std::cout << "Error SDL_Image Init" << IMG_GetError() << std::endl;
+	}
+	//Let me know/handle if SDL_ttf doesn't get initialised properly
+	if (TTF_Init() == -1)
+	{
+		std::cout << "TTF_Init: " << TTF_GetError();
+	}
+
+
 	//Initialise window
-	InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, full);
+	InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false);
 
 	initOpenGL(); //Call initOpenGL function
-	initGeometry(); //Call initGeometry function
+	CheckForErrors();
 	setViewPort(WINDOW_WIDTH, WINDOW_HEIGHT); //set viewport
 
-	//Where my event at
+	//Init Camera and cube 
+	Initialise();
+
+	//Where my event at/Handle event generator
 	SDL_Event event;
 
-	createShader();
 	//Game loop/Black magic
 	while (running)
 	{
@@ -342,17 +481,8 @@ int main(int argc, char * arg[])
 		render(); //Draw the scene/flip the buffers etc.
 	}
 
-
-	//Initiate SDL
-	if(SDL_Init (SDL_INIT_EVERYTHING) != 0)
-	{
-		std::cout <<"ERROR SDL_Init" <<SDL_GetError() << std::endl;
-
-		//If it fucks up ...
-		return -1;
-	}
-
 	CleanUp();
+
 	return 0;
 }
 
