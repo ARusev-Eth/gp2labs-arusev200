@@ -73,13 +73,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\assets\shaders\simpleVS.glsl" />
-    <None Include="..\assets\shaders\simpleFS.glsl" />
-    <None Include="..\assets\shaders\textureFS.glsl" />
-    <None Include="..\assets\shaders\textureVS.glsl" />
-    <None Include="..\assets\shaders\vertexColourFS.glsl" />
-    <None Include="..\assets\shaders\vertexColourTextureFS.glsl" />
-    <None Include="..\assets\shaders\vertexColourTextureVS.glsl" />
-    <None Include="..\assets\shaders\vertexColourVS.glsl" />
+    <None Include="assets\shaders\simpleFS.glsl" />
+    <None Include="assets\shaders\simpleVS.glsl" />
+    <None Include="assets\shaders\textureFS.glsl" />
+    <None Include="assets\shaders\textureVS.glsl" />
+    <None Include="assets\shaders\vertexColourFS.glsl" />
+    <None Include="assets\shaders\vertexColourTextureFS.glsl" />
+    <None Include="assets\shaders\vertexColourTextureVS.glsl" />
+    <None Include="assets\shaders\vertexColourVS.glsl" />
   </ItemGroup>
 </Project>
