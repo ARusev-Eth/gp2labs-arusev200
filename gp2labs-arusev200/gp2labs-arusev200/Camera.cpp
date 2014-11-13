@@ -25,7 +25,7 @@ Camera::~Camera()
 void Camera::update()
 {
 	//Get camera's position from it's parent's transform
-	vec3 position = m_Parent->getTransform->getPosition();
+	vec3 position = m_Parent->getTransform()->getPosition();
 
 	m_Projection = glm::perspective(m_FOV, m_AspectRatio, m_NearClip, m_FarClip);
 	m_View = glm::lookAt(position, m_LookAt, m_Up);

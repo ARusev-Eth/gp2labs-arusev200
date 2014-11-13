@@ -1,4 +1,3 @@
-//Headers
 #include <iostream>
 #include <GL/glew.h> //include glew
 //Maths
@@ -152,7 +151,7 @@ void CleanUp()
 			iter++;
 		}
 	}
-	displayList.clear;
+	displayList.clear();
 
 	SDL_GL_DeleteContext(glcontext); //Delete OGL context before you exit
 	SDL_DestroyWindow(window);
@@ -274,7 +273,7 @@ void render()
 		//Get the current object's(the one being rendered during this loop) mesh, transform and material
 		Mesh * currentMesh = (*iter)->getMesh();
 		Transform * currentTransform = (*iter)->getTransform();
-		Material * currentMaterial = (*iter)->getMaterial;
+		Material * currentMaterial = (*iter)->getMaterial();
 
 		//If the object has a mesh, a transform and a material
 		if (currentMesh && currentTransform && currentMaterial)
@@ -285,7 +284,7 @@ void render()
 			GLint MVPLocation = currentMaterial->getUnifromLocation("MVP");
 
 			Camera * cam = mainCamera->getCamera();
-			mat4 MVP = cam->getProjection() * cam->getView * currentTransform->getModel();
+			mat4 MVP = cam->getProjection() * cam->getView() * currentTransform->getModel();
 			//Should look back at this later on
 			glUniformMatrix4fv(MVPLocation, 1, GL_FALSE, glm::value_ptr(MVP));
 

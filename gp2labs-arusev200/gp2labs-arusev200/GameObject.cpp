@@ -24,6 +24,14 @@ void GameObject::init()
 	//So confused when this wasn't working... turns out I just spelt it with a non-capital c X_X
 	for (auto iter = m_Components.begin(); iter != m_Components.end(); iter++)
 	{
+		(*iter)->init();
+	}
+}
+
+void GameObject::update()
+{
+	for (auto iter = m_Components.begin(); iter != m_Components.end(); iter++)
+	{
 		(*iter)->update();
 	}
 }
