@@ -211,12 +211,12 @@ void Initialise()
 {
 	//Making the camera
 	mainCamera = new GameObject(); 
-	mainCamera->SetName("MainCamera"); 
+	mainCamera->setName("MainCamera"); 
 
 	//Setting up the transformation
 	Transform *t = new Transform();
 	t->setPosition(0.0f, 0.0f, 10.0f);
-	mainCamera->SetTransform(t);
+	mainCamera->setTransform(t);
 
 	//Setting the camera's properties up
 	Camera * c = new Camera();
@@ -282,10 +282,10 @@ void render()
 			currentMaterial->bind();
 			currentMesh->bind();
 
-			GLint MVPLocation = currentMaterial->getUniformLocation("MVP");
+			GLint MVPLocation = currentMaterial->getUnifromLocation("MVP");
 
-			Camera * camera1 = mainCamera->getCamera();
-			mat4 MVP = cam->getProjection() * camera1->getView * currentTransform->getModel();
+			Camera * cam = mainCamera->getCamera();
+			mat4 MVP = cam->getProjection() * cam->getView * currentTransform->getModel();
 			//Should look back at this later on
 			glUniformMatrix4fv(MVPLocation, 1, GL_FALSE, glm::value_ptr(MVP));
 

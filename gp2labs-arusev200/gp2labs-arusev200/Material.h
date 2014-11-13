@@ -7,16 +7,16 @@
 #include <GL/GLU.h>
 #include "Component.h"
 
-class Material::public Component{
+class Material:public Component{
 public: 
 	Material();
 	~Material();
 
-	void destroy;
+	void destroy();
 	void bind();
 	bool loadShader(const std::string& vsFilename, const std::string& fsFileName);
 
-	Glint getUnifromLocation(const std::string& name);
+	GLint getUnifromLocation(const std::string& name);
 
 protected:
 private:

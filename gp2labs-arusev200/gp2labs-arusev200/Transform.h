@@ -16,13 +16,14 @@ public:
 	~Transform();
 
 	void update();
-	void setPosition(float x, float z);
-	void setRotation(floatx, float y, float z);
+	void setPosition(float x, float y, float z);
+	void setRotation(float x, float y, float z);
+	void setScale(float x, float y, float z);
 
 	vec3& getPosition();
 	vec3& getScale();
 	vec3& getRotation();
-	mat& getModel();
+	mat4& getModel();
 
 private:
 	vec3 m_Position;

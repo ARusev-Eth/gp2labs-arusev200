@@ -17,7 +17,7 @@ Camera::Camera()
 }
 
 //Destructor
-Camera::Camera()
+Camera::~Camera()
 {
 }
 

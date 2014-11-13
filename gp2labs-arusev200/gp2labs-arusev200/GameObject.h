@@ -22,7 +22,7 @@ public:
 	void destroy();
 
 	void addComponent(Component * component);
-	void setname(const std::string& name);
+	void setName(const std::string& name);
 	const std::string& getName();
 
 	void setTransform(Transform * transform);
@@ -37,7 +37,7 @@ public:
 
 protected:
 private:
-	std::vector<Component*> m_components;
+	std::vector<Component*> m_Components;
 	std::string m_Name;
 
 	Transform *m_Transform;
@@ -45,7 +45,5 @@ private:
 	Material *m_Material;
 	Camera *m_Camera;
 };
-
-#endif
 
 #endif
